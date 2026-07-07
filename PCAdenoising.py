@@ -28,8 +28,8 @@ if page == "1. Présentation PPT (PDF)":
     st.write("Voici les diapositives théoriques de mon projet sur l'Analyse en Composantes Principales.")
     
     # Lien de ton Google Drive configuré en Public
-    file_id = "1O4y7l7TkO0BcTdpT9au1ELkP2taXvCet"
-    lien_drive_embed = f"https://drive.google.com/file/d/1yYGQ78AofpLGR8kiaYVeSa4gTHx2zQB4/view?usp=sharing"
+    file_id = "1yYGQ78AofpLGR8kiaYVeSa4gTHx2zQB4"
+    lien_drive_embed = f"https://drive.google.com/file/d/{file_id}/preview"
     
     st.components.v1.html(
         f'<iframe src="{lien_drive_embed}" style="width:100%; height:750px;" frameborder="0" allowfullscreen></iframe>',
