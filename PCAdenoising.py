@@ -11,7 +11,7 @@ st.set_page_config(page_title="Projet ML - PCA Dénoiser", layout="wide")
 st.sidebar.title("Navigation")
 page = st.sidebar.radio("Sélectionnez ce que vous voulez voir :", ["1. Présentation PPT (PDF)", "2. Cas Pratique PCA (MNIST)"])
 
-# --- CONFIGURATION ESTHÉTIQUE DES GRAPHES (Premium Style) ---
+# --- CONFIGURATION ESTHÉTIQUE DES GRAPHES (Anti-Flou & Crisp Rendering) ---
 try:
     plt.style.use('seaborn-v0_8-whitegrid')
 except:
@@ -21,6 +21,9 @@ plt.rcParams['figure.facecolor'] = 'white'
 plt.rcParams['axes.facecolor'] = '#f8f9fa'
 plt.rcParams['grid.color'] = '#e9ecef'
 font_title = {'color': '#1a1a1a', 'weight': 'bold', 'size': 16}
+
+# Fix pour forcer des pixels nets partout dans Matplotlib
+plt.rcParams['image.interpolation'] = 'nearest'
 
 # --- SECTION 1 : AFFICHAGE DU PPT ---
 if page == "1. Présentation PPT (PDF)":
@@ -35,7 +38,7 @@ if page == "1. Présentation PPT (PDF)":
         height=750
     )
 
-# --- SECTION 2 : CAS PRATIQUE INTERACTIF ---
+# --- SECTION 2 : CAS PRATIQUE INTERACTIF (SHARP PIXELS) ---
 elif page == "2. Cas Pratique PCA (MNIST)":
     st.title("💻 Application Interactive - Dénoyage d'images par PCA")
     st.write("Cette application démontre la puissance géométrique de la PCA pour filtrer le bruit blanc intense d'un signal.")
@@ -67,7 +70,7 @@ elif page == "2. Cas Pratique PCA (MNIST)":
 
     st.markdown("---")
 
-    # --- VISUALISATION 1 : TRIPLE LIGNE NETTE (ZÉRO FLOU) ---
+    # --- VISUALISATION 1 : TRIPLE LIGNE NETTE ET PIXELÉE (EFFET WAOUH JUYTER) ---
     st.subheader("🔥 Matrice de Restauration : Signal Pur vs Bruité vs Filtré")
     
     n_digits = 6 
@@ -75,19 +78,19 @@ elif page == "2. Cas Pratique PCA (MNIST)":
     cmap_choice = 'magma' 
 
     for i in range(n_digits):
-        # Ligne 1 : Image Originale (nearest forced)
+        # Ligne 1 : Image Originale (Pixels nets forcés)
         axes1[0, i].imshow(X_raw[i].reshape(8, 8), cmap=cmap_choice, interpolation='nearest')
         axes1[0, i].axis('off')
         if i == 0:
             axes1[0, i].set_title("1. SIGNAL PUR\n(MNIST Original)", fontdict=font_title, loc='left')
 
-        # Ligne 2 : Image Noyée sous le Bruit (nearest forced)
+        # Ligne 2 : Image Noyée sous le Bruit (Bruit net et grain pixelisé exact)
         axes1[1, i].imshow(X_bruite[i].reshape(8, 8), cmap=cmap_choice, interpolation='nearest')
         axes1[1, i].axis('off')
         if i == 0:
             axes1[1, i].set_title("2. BRUIT BLANC INTENSE\n(Signal noyé)", fontdict=font_title, loc='left')
 
-        # Ligne 3 : Restauration Géométrique (nearest forced)
+        # Ligne 3 : Restauration Géométrique (Formes géométriques nettes)
         axes1[2, i].imshow(X_debruite[i].reshape(8, 8), cmap=cmap_choice, interpolation='nearest')
         axes1[2, i].axis('off')
         if i == 0:
