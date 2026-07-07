@@ -122,4 +122,4 @@ elif page == "2. Cas Pratique PCA (MNIST)":
     plt.tight_layout()
     
     st.pyplot(fig2)
-    st.success(f"✅ Analyse terminée ! En ciblant {int(variance_cible*100)}% de l'information, la PCA isole les structures géométriques essentielles et rejette le bruit mathématique résiduel.")v
+    st.success(f"✅ Analyse terminée ! En ciblant {int(variance_cible*100)}% de l'information, la PCA isole les structures géométriques essentielles et rejette le bruit mathématique résiduel.")
