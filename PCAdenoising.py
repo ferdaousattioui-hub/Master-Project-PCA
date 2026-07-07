@@ -1,125 +1,125 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[4]:
-
-
+import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.datasets import fetch_openml
+from sklearn.datasets import load_digits
 from sklearn.decomposition import PCA
 
-# =====================================================================
-# 1. CONFIGURATION ESTHÉTIQUE SÉCURISÉE (Zéro bug de style)
-# =====================================================================
-try:
-    plt.style.use('seaborn-whitegrid')
-except:
-    try:
-        plt.style.use('seaborn-v0_8-whitegrid')
-    except:
-        plt.style.use('ggplot')
+# --- CONFIGURATION DE LA PAGE ---
+st.set_page_config(page_title="Projet ML - PCA Dénoiser", layout="wide")
 
-# Customisation pour un rendu premium / moderne
+# --- BARRE LATÉRALE DE NAVIGATION ---
+st.sidebar.title("Navigation")
+page = st.sidebar.radio("Sélectionnez ce que vous voulez voir :", ["1. Présentation PPT (PDF)", "2. Cas Pratique PCA (MNIST)"])
+
+# --- CONFIGURATION ESTHÉTIQUE DES GRAPHES (Premium Style) ---
+try:
+    plt.style.use('seaborn-v0_8-whitegrid')
+except:
+    plt.style.use('ggplot')
+
 plt.rcParams['figure.facecolor'] = 'white'
 plt.rcParams['axes.facecolor'] = '#f8f9fa'
 plt.rcParams['grid.color'] = '#e9ecef'
-font_title = {'color': '#1a1a1a', 'weight': 'bold', 'size': 14}
+font_title = {'color': '#1a1a1a', 'weight': 'bold', 'size': 16}
 
-# =====================================================================
-# 2. CHARGEMENT ET PRÉPARATION DU DATASET MNIST
-# =====================================================================
-print("🔄 Chargement des données MNIST (Extraction de 5000 images)...")
-mnist = fetch_openml('mnist_784', version=1, as_frame=False, parser='auto')
-X_raw = mnist.data[:5000] / 255.0  # Normalisation des pixels entre 0 et 1
+# --- SECTION 1 : AFFICHAGE DU PPT ---
+if page == "1. Présentation PPT (PDF)":
+    st.title("📂 Présentation du Projet - PCA")
+    st.write("Voici les diapositives théoriques de mon projet sur l'Analyse en Composantes Principales.")
+    
+    # Lien de ton Google Drive configuré en Public
+    file_id = "1O4y7l7TkO0BcTdpT9au1ELkP2taXvCet"
+    lien_drive_embed = f"https://drive.google.com/file/d/{file_id}/preview"
+    
+    st.components.v1.html(
+        f'<iframe src="{lien_drive_embed}" style="width:100%; height:750px;" frameborder="0" allowfullscreen></iframe>',
+        height=750
+    )
 
-# =====================================================================
-# 3. INJECTION D'UN BRUIT BLANC GAUSSIEN INTENSE
-# =====================================================================
-np.random.seed(2026)
-# On passe de 0.55 à 0.25 pour redonner l'avantage au signal du chiffre
-bruit_optimal = np.random.normal(loc=0.0, scale=0.25, size=X_raw.shape) 
-X_bruite = np.clip(X_raw + bruit_optimal, 0., 1.)
+# --- SECTION 2 : CAS PRATIQUE INTERACTIF  ---
+elif page == "2. Cas Pratique PCA (MNIST)":
+    st.title("💻 Application Interactive - Dénoyage d'images par PCA")
+    st.write("Cette application démontre la puissance géométrique de la PCA pour filtrer le bruit blanc intense d'un signal.")
 
-# =====================================================================
-# 4. TRANSFORMATION PCA : LE JUSTE MILIEU
-# =====================================================================
-# Option A : On cible 75% de variance pour forcer l'exclusion du bruit
-pca = PCA(n_components=0.75) 
+    # --- BARRE LATÉRALE DES PARAMÈTRES (INTERACTIF POUR LE JURY) ---
+    st.sidebar.subheader("🎛️ Paramètres en Direct")
+    variance_cible = st.sidebar.slider("Variance expliquée ciblée (%)", min_value=50, max_value=95, value=75, step=5) / 100.0
+    niveau_bruit = st.sidebar.slider("Intensité du bruit gaussien", min_value=0.1, max_value=0.6, value=0.25, step=0.05)
 
-# Option B (Alternative encore plus radicale) : On force un nombre fixe d'axes
-# pca = PCA(n_components=40) 
+    # Chargement ULTRA-RAPIDE pour éviter le crash Streamlit Cloud
+    digits = load_digits()
+    X_raw = digits.data / 16.0  
 
-X_reduit = pca.fit_transform(X_bruite)
-X_debruite = np.clip(pca.inverse_transform(X_reduit), 0., 1.)
+    # Injection du bruit blanc gaussien intense 
+    np.random.seed(2026)
+    bruit = np.random.normal(loc=0.0, scale=niveau_bruit, size=X_raw.shape) 
+    X_bruite = np.clip(X_raw + bruit, 0., 1.)
 
-print("\n✅ Analyse et traitement PCA terminés avec succès !")
-print(f"   🔹 Espace d'origine  : {X_raw.shape[1]} dimensions (pixels).")
-print(f"   🔹 Espace de la PCA  : {pca.n_components_} composantes principales retenues.")
-print(f"   🔹 Taux de compression : {round((1 - (pca.n_components_ / 784)) * 100, 2)}% de dimensions économisées.\n")
+    # Transformation PCA
+    pca = PCA(n_components=variance_cible) 
+    X_reduit = pca.fit_transform(X_bruite)
+    X_debruite = np.clip(pca.inverse_transform(X_reduit), 0., 1.)
 
-# =====================================================================
-# 5. VISUALISATION 1 : LE COMPARATIF TRIPLE LIGNE (Effet Waouh)
-# =====================================================================
-n_digits = 6  # Nombre de chiffres à afficher en colonnes
-fig, axes = plt.subplots(3, n_digits, figsize=(14, 8.5))
+    # --- PANNEAU DE STATISTIQUES MODERNES ---
+    col1, col2, col3 = st.columns(3)
+    col1.metric(label="📊 Espace d'origine", value=f"{X_raw.shape[1]} Pixels (Dimensions)")
+    col2.metric(label="⚙️ Composantes retenues", value=f"{pca.n_components_} Axes Vectoriels")
+    taux_compression = round((1 - (pca.n_components_ / X_raw.shape[1])) * 100, 2)
+    col3.metric(label="📉 Dimensions économisées", value=f"{taux_compression} %")
 
-# Palette de couleurs 'magma' pour un effet thermique très pro
-cmap_choice = 'magma' 
+    st.markdown("---")
 
-for i in range(n_digits):
-    # Ligne 1 : Image Originale (Le Signal Pur)
-    axes[0, i].imshow(X_raw[i].reshape(28, 28), cmap=cmap_choice)
-    axes[0, i].axis('off')
-    if i == 0:
-        axes[0, i].set_title("1. SIGNAL PUR\n(MNIST Original)", fontdict=font_title, loc='left')
+    # --- VISUALISATION 1 : LE COMPARATIF TRIPLE LIGNE (EFFET WAOUH!) ---
+    st.subheader("🔥 Matrice de Restauration : Signal Pur vs Bruité vs Filtré")
+    
+    n_digits = 6 
+    # T-7kem f figsize bach tban kbira o mferg3a f l-interface
+    fig1, axes1 = plt.subplots(3, n_digits, figsize=(15, 9.5))
+    cmap_choice = 'magma' # Dik l-palette dyal magma lli khtariyti premium bzaff!
 
-    # Ligne 2 : Image Noyée sous le Bruit (Friture TV complète)
-    axes[1, i].imshow(X_bruite[i].reshape(28, 28), cmap=cmap_choice)
-    axes[1, i].axis('off')
-    if i == 0:
-        axes[1, i].set_title("2. BRUIT BLANC INTENSE\n(Signal totalement noyé)", fontdict=font_title, loc='left')
+    for i in range(n_digits):
+        # Ligne 1 : Image Originale (Le Signal Pur)
+        axes1[0, i].imshow(X_raw[i].reshape(8, 8), cmap=cmap_choice)
+        axes1[0, i].axis('off')
+        if i == 0:
+            axes1[0, i].set_title("1. SIGNAL PUR\n(MNIST Original)", fontdict=font_title, loc='left')
 
-    # Ligne 3 : Restauration Géométrique par la PCA
-    axes[2, i].imshow(X_debruite[i].reshape(28, 28), cmap=cmap_choice)
-    axes[2, i].axis('off')
-    if i == 0:
-        axes[2, i].set_title("3. FILTRAGE VIA PCA\n(Restauration des structures)", fontdict=font_title, loc='left')
+        # Ligne 2 : Image Noyée sous le Bruit
+        axes1[1, i].imshow(X_bruite[i].reshape(8, 8), cmap=cmap_choice)
+        axes1[1, i].axis('off')
+        if i == 0:
+            axes1[1, i].set_title("2. BRUIT BLANC INTENSE\n(Signal noyé)", fontdict=font_title, loc='left')
 
-plt.tight_layout()
-plt.subplots_adjust(hspace=0.45)
-print("📊 Génération de la matrice comparative graphique...")
-plt.show()
+        # Ligne 3 : Restauration Géométrique par la PCA
+        axes1[2, i].imshow(X_debruite[i].reshape(8, 8), cmap=cmap_choice)
+        axes1[2, i].axis('off')
+        if i == 0:
+            axes1[2, i].set_title("3. FILTRAGE VIA PCA\n(Structures restaurées)", fontdict=font_title, loc='left')
 
-# =====================================================================
-# 6. VISUALISATION 2 : COURBE DE SCREENING (L'explication pour le Jury)
-# =====================================================================
-plt.figure(figsize=(10, 5.5))
-variance_cumulee = np.cumsum(pca.explained_variance_ratio_)
+    plt.tight_layout()
+    plt.subplots_adjust(hspace=0.5)
+    st.pyplot(fig1) # Afichage direct 
 
-# Coloration esthétique de la zone d'information utile
-plt.fill_between(range(len(variance_cumulee)), variance_cumulee, color="#8e44ad", alpha=0.15)
+    st.markdown("---")
 
-# Tracé de la courbe et des lignes de repère
-plt.plot(variance_cumulee, color="#8e44ad", linewidth=3, label="Variance expliquée cumulée")
-plt.axhline(y=0.90, color='#e74c3c', linestyle='--', linewidth=2, label='Seuil d\'Information Ciblé (90%)')
-plt.axvline(x=pca.n_components_, color='#2ecc71', linestyle=':', linewidth=2, label=f'{pca.n_components_} Axes Sélectionnés')
+    # --- VISUALISATION 2 : COURBE DE SCREENING 
+    st.subheader("📈 Courbe de Screening & Analyse Spectrale du Bruit")
+    
+    fig2 = plt.figure(figsize=(11, 5.5))
+    variance_cumulee = np.cumsum(pca.explained_variance_ratio_)
 
-# Habillage du graphique
-plt.title("Pourquoi la PCA élimine-t-elle le bruit ? (Analyse Spectrale)", fontsize=14, fontweight='bold', pad=15)
-plt.xlabel("Nombre de Composantes Principales (Nouvel Espace Vectoriel)", fontsize=11)
-plt.ylabel("Ratio de Variance Capturée", fontsize=11)
-plt.xlim(0, 150)  # Zoom sur la zone du "coude" pour une meilleure lisibilité
-plt.ylim(0, 1.05)
-plt.legend(loc="lower right", frameon=True, facecolor='white', framealpha=0.9)
-plt.tight_layout()
+    plt.fill_between(range(len(variance_cumulee)), variance_cumulee, color="#8e44ad", alpha=0.15)
+    plt.plot(variance_cumulee, color="#8e44ad", linewidth=3, label="Variance expliquée cumulée")
+    plt.axhline(y=variance_cible, color='#e74c3c', linestyle='--', linewidth=2, label=f'Seuil cible ({int(variance_cible*100)}%)')
+    plt.axvline(x=pca.n_components_, color='#2ecc71', linestyle=':', linewidth=2, label=f'{pca.n_components_} Axes Sélectionnés')
 
-print("📊 Génération de la courbe de variance...")
-plt.show()
-
-
-# In[ ]:
-
-
-
-
+    plt.title("Pourquoi la PCA élimine-t-elle le bruit ?", fontsize=14, fontweight='bold', pad=15)
+    plt.xlabel("Nombre de Composantes Principales (Nouvel Espace Vectoriel)", fontsize=11)
+    plt.ylabel("Ratio de Variance Capturée", fontsize=11)
+    plt.xlim(0, X_raw.shape[1]) 
+    plt.ylim(0, 1.05)
+    plt.legend(loc="lower right", frameon=True, facecolor='white', framealpha=0.9)
+    plt.tight_layout()
+    
+    st.pyplot(fig2)
+    st.success(f"✅ Analyse terminée ! En ciblant {int(variance_cible*100)}% de l'information, la PCA isole les structures géométriques essentielles et rejette le bruit mathématique résiduel.")v
