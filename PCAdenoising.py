@@ -126,4 +126,4 @@ elif page == "2. Cas Pratique PCA (MNIST)":
     plt.tight_layout()
     
     st.pyplot(fig2)
-    st.success(f"✅ Analyse terminée ! La PCA a isolé les structures géométriques essentielles du dataset MNIST d bsa7.")
+    st.success(f"✅ Analyse terminée ! La PCA a isolé les structures géométriques essentielles du dataset MNIST .")
