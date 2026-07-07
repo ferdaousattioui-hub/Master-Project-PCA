@@ -29,7 +29,7 @@ if page == "1. Présentation PPT (PDF)":
     
     # Lien de ton Google Drive configuré en Public
     file_id = "1O4y7l7TkO0BcTdpT9au1ELkP2taXvCet"
-    lien_drive_embed = f"https://drive.google.com/file/d/1he83TFy8qY74MgY--bD1gvXq9wCaWvvV/view?usp=sharing"
+    lien_drive_embed = f"https://drive.google.com/file/d/1yYGQ78AofpLGR8kiaYVeSa4gTHx2zQB4/view?usp=sharing"
     
     st.components.v1.html(
         f'<iframe src="{lien_drive_embed}" style="width:100%; height:750px;" frameborder="0" allowfullscreen></iframe>',
