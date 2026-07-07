@@ -27,7 +27,6 @@ if page == "1. Présentation PPT (PDF)":
     st.title("📂 Présentation du Projet - PCA")
     st.write("Voici les diapositives théoriques de mon projet sur l'Analyse en Composantes Principales.")
     
-    # Lien de ton Google Drive configuré en Public
     file_id = "1yYGQ78AofpLGR8kiaYVeSa4gTHx2zQB4"
     lien_drive_embed = f"https://drive.google.com/file/d/{file_id}/preview"
     
@@ -36,21 +35,20 @@ if page == "1. Présentation PPT (PDF)":
         height=750
     )
 
-# --- SECTION 2 : CAS PRATIQUE INTERACTIF  ---
+# --- SECTION 2 : CAS PRATIQUE INTERACTIF ---
 elif page == "2. Cas Pratique PCA (MNIST)":
     st.title("💻 Application Interactive - Dénoyage d'images par PCA")
     st.write("Cette application démontre la puissance géométrique de la PCA pour filtrer le bruit blanc intense d'un signal.")
 
-    # --- BARRE LATÉRALE DES PARAMÈTRES (INTERACTIF POUR LE JURY) ---
+    # --- BARRE LATÉRALE DES PARAMÈTRES ---
     st.sidebar.subheader("🎛️ Paramètres en Direct")
     variance_cible = st.sidebar.slider("Variance expliquée ciblée (%)", min_value=50, max_value=95, value=75, step=5) / 100.0
     niveau_bruit = st.sidebar.slider("Intensité du bruit gaussien", min_value=0.1, max_value=0.6, value=0.25, step=0.05)
 
-    # Chargement ULTRA-RAPIDE pour éviter le crash Streamlit Cloud
+    # Chargement stable et rapide
     digits = load_digits()
     X_raw = digits.data / 16.0  
 
-    # Injection du bruit blanc gaussien intense 
     np.random.seed(2026)
     bruit = np.random.normal(loc=0.0, scale=niveau_bruit, size=X_raw.shape) 
     X_bruite = np.clip(X_raw + bruit, 0., 1.)
@@ -60,7 +58,7 @@ elif page == "2. Cas Pratique PCA (MNIST)":
     X_reduit = pca.fit_transform(X_bruite)
     X_debruite = np.clip(pca.inverse_transform(X_reduit), 0., 1.)
 
-    # --- PANNEAU DE STATISTIQUES MODERNES ---
+    # --- PANNEAU DE STATISTIQUES ---
     col1, col2, col3 = st.columns(3)
     col1.metric(label="📊 Espace d'origine", value=f"{X_raw.shape[1]} Pixels (Dimensions)")
     col2.metric(label="⚙️ Composantes retenues", value=f"{pca.n_components_} Axes Vectoriels")
@@ -69,40 +67,39 @@ elif page == "2. Cas Pratique PCA (MNIST)":
 
     st.markdown("---")
 
-    # --- VISUALISATION 1 : LE COMPARATIF TRIPLE LIGNE (EFFET WAOUH!) ---
+    # --- VISUALISATION 1 : TRIPLE LIGNE NETTE (ZÉRO FLOU) ---
     st.subheader("🔥 Matrice de Restauration : Signal Pur vs Bruité vs Filtré")
     
     n_digits = 6 
-    # T-7kem f figsize bach tban kbira o mferg3a f l-interface
     fig1, axes1 = plt.subplots(3, n_digits, figsize=(15, 9.5))
-    cmap_choice = 'magma' # Dik l-palette dyal magma lli khtariyti premium bzaff!
+    cmap_choice = 'magma' 
 
     for i in range(n_digits):
-        # Ligne 1 : Image Originale (Le Signal Pur)
-        axes1[0, i].imshow(X_raw[i].reshape(8, 8), cmap=cmap_choice)
+        # Ligne 1 : Image Originale (nearest forced)
+        axes1[0, i].imshow(X_raw[i].reshape(8, 8), cmap=cmap_choice, interpolation='nearest')
         axes1[0, i].axis('off')
         if i == 0:
             axes1[0, i].set_title("1. SIGNAL PUR\n(MNIST Original)", fontdict=font_title, loc='left')
 
-        # Ligne 2 : Image Noyée sous le Bruit
-        axes1[1, i].imshow(X_bruite[i].reshape(8, 8), cmap=cmap_choice)
+        # Ligne 2 : Image Noyée sous le Bruit (nearest forced)
+        axes1[1, i].imshow(X_bruite[i].reshape(8, 8), cmap=cmap_choice, interpolation='nearest')
         axes1[1, i].axis('off')
         if i == 0:
             axes1[1, i].set_title("2. BRUIT BLANC INTENSE\n(Signal noyé)", fontdict=font_title, loc='left')
 
-        # Ligne 3 : Restauration Géométrique par la PCA
-        axes1[2, i].imshow(X_debruite[i].reshape(8, 8), cmap=cmap_choice)
+        # Ligne 3 : Restauration Géométrique (nearest forced)
+        axes1[2, i].imshow(X_debruite[i].reshape(8, 8), cmap=cmap_choice, interpolation='nearest')
         axes1[2, i].axis('off')
         if i == 0:
             axes1[2, i].set_title("3. FILTRAGE VIA PCA\n(Structures restaurées)", fontdict=font_title, loc='left')
 
     plt.tight_layout()
     plt.subplots_adjust(hspace=0.5)
-    st.pyplot(fig1) # Afichage direct 
+    st.pyplot(fig1)
 
     st.markdown("---")
 
-    # --- VISUALISATION 2 : COURBE DE SCREENING 
+    # --- VISUALISATION 2 : COURBE DE SCREENING ---
     st.subheader("📈 Courbe de Screening & Analyse Spectrale du Bruit")
     
     fig2 = plt.figure(figsize=(11, 5.5))
