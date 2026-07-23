@@ -106,7 +106,7 @@ elif page == "2. Cas Pratique PCA (MNIST)":
 
     st.markdown("---")
 
-    # --- VISUALISATION 2 : COURBE DE SCREENING ---
+# --- VISUALISATION 2 : COURBE DE SCREENING (DYNAMIQUE) ---
     st.subheader("📈 Courbe de Screening & Analyse Spectrale du Bruit")
     
     fig2 = plt.figure(figsize=(10, 5.5))
@@ -114,8 +114,13 @@ elif page == "2. Cas Pratique PCA (MNIST)":
 
     plt.fill_between(range(len(variance_cumulee)), variance_cumulee, color="#8e44ad", alpha=0.15)
     plt.plot(variance_cumulee, color="#8e44ad", linewidth=3, label="Variance expliquée cumulée")
-    plt.axhline(y=0.90, color='#e74c3c', linestyle='--', linewidth=2, label='Seuil d\'Information Ciblé (90%)')
-    plt.axvline(x=pca.n_components_, color='#2ecc71', linestyle=':', linewidth=2, label=f'{pca.n_components_} Axes Sélectionnés')
+    
+    # 🔧 MODIFICATION ICI : On utilise variance_cible dynamiquement
+    plt.axhline(y=variance_cible, color='#e74c3c', linestyle='--', linewidth=2, 
+                label=f'Seuil d\'Information Ciblé ({int(variance_cible * 100)}%)')
+    
+    plt.axvline(x=pca.n_components_, color='#2ecc71', linestyle=':', linewidth=2, 
+                label=f'{pca.n_components_} Axes Sélectionnés')
 
     plt.title("Pourquoi la PCA élimine-t-elle le bruit ? (Analyse Spectrale)", fontsize=14, fontweight='bold', pad=15)
     plt.xlabel("Nombre de Composantes Principales (Nouvel Espace Vectoriel)", fontsize=11)
@@ -126,4 +131,4 @@ elif page == "2. Cas Pratique PCA (MNIST)":
     plt.tight_layout()
     
     st.pyplot(fig2)
-    st.success(f"✅ Analyse terminée ! La PCA a isolé les structures géométriques essentielles du dataset MNIST .")
+    st.success(f"✅ Analyse terminée ! La PCA a isolé les structures géométriques essentielles du dataset MNIST.")
